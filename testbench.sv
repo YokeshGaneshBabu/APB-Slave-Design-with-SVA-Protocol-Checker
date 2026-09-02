@@ -250,12 +250,8 @@ module tb_apb;
 
         //-----------------------------------------------------------------
         // Negative tests
-        //
-        // Uncomment this section when you specifically want to prove
-        // that the SVA checker catches protocol violations.
         //-----------------------------------------------------------------
 
-        /*
         $display("=========================================================");
         $display(" NEGATIVE TESTS - checker SHOULD report errors below");
         $display("=========================================================");
@@ -329,7 +325,6 @@ module tb_apb;
         apb_idle();
 
         repeat (3) @(posedge PCLK);
-        */
 
         //-----------------------------------------------------------------
         // Finish
