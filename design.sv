@@ -214,7 +214,8 @@ module apb_checker #(
     parameter ADDR_WIDTH = 8,
     parameter DATA_WIDTH = 32
 ) (
-    apb_if.slave apb
+    apb_if.slave apb,
+    input logic [1:0] wait_cfg
 );
 
     //-----------------------------------------------------------------
@@ -329,24 +330,19 @@ module apb_checker #(
     // Functional coverage
     //-----------------------------------------------------------------
     covergroup cg_apb_transfers
-        @(posedge apb.PCLK iff
-        (apb.PSEL && apb.PENABLE && apb.PREADY));
+    @(posedge apb.PCLK iff (apb.PSEL && apb.PENABLE && apb.PREADY));
 
-        cp_write:
-            coverpoint apb.PWRITE;
+    cp_write:  coverpoint apb.PWRITE;
+    cp_slverr: coverpoint apb.PSLVERR;
 
-        cp_slverr:
-            coverpoint apb.PSLVERR;
+    cp_addr: coverpoint apb.PADDR {
+        bins valid_regs[] = {8'h00, 8'h04, 8'h08, 8'h0C, 8'h10};
+        bins invalid_region = default;
+    }
 
-        cp_addr:
-            coverpoint apb.PADDR {
-                bins valid_regs[] =
-                    {8'h00, 8'h04, 8'h08, 8'h0C, 8'h10};
-
-                bins invalid_region = default;
-            }
-
-    endgroup
+    cp_wait: coverpoint wait_cfg;                 // wait states 0..3
+    cx_wr_addr: cross cp_write, cp_addr;          // read/write x register
+	endgroup
 
     cg_apb_transfers cg_inst = new();
 
@@ -360,5 +356,6 @@ bind apb_slave apb_checker #(
     .ADDR_WIDTH (ADDR_WIDTH),
     .DATA_WIDTH (DATA_WIDTH)
 ) u_apb_checker (
-    .apb (apb)
+    .apb      (apb),
+    .wait_cfg (wait_cfg)
 );
