@@ -246,6 +246,32 @@ module tb_apb;
         apb_idle();
 
         repeat (3) @(posedge PCLK);
+      //-------------------------------------------------------------
+      // Test 5: read WAIT_CFG, wait states 1 and 3
+      //-------------------------------------------------------------
+      $display("[%0t] --- Test 5: WAIT_CFG read, 1 and 3 wait states ---", $time);
+
+      apb_read(8'h10, rdata);
+      if (rdata !== 32'h0) $error("Test 5a FAILED: WAIT_CFG reset value 0x%0h", rdata);
+
+      apb_write(8'h10, 32'h1);
+      apb_write(8'h00, 32'hA5A5_A5A5);
+      apb_read (8'h00, rdata);
+      if (rdata !== 32'hA5A5_A5A5) $error("Test 5b FAILED: got 0x%0h", rdata);
+
+      apb_write(8'h10, 32'h3);
+      apb_write(8'h04, 32'h5A5A_5A5A);
+      apb_read (8'h04, rdata);
+      if (rdata !== 32'h5A5A_5A5A) $error("Test 5c FAILED: got 0x%0h", rdata);
+
+      apb_read(8'h10, rdata);
+      if (rdata !== 32'h3) $error("Test 5d FAILED: WAIT_CFG read 0x%0h", rdata);
+
+      apb_write(8'h10, 32'h0);
+      $display("Test 5 DONE");
+
+      apb_idle();
+      repeat (3) @(posedge PCLK);
 
 
         //-----------------------------------------------------------------
@@ -325,6 +351,7 @@ module tb_apb;
         apb_idle();
 
         repeat (3) @(posedge PCLK);
+      $display("Functional coverage = %0.2f%%", $get_coverage());
 
         //-----------------------------------------------------------------
         // Finish
